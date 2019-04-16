@@ -16,7 +16,6 @@ import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("unchecked")
 abstract class AbstractAggregate<A extends AbstractAggregate> {
@@ -70,8 +69,8 @@ abstract class AbstractAggregate<A extends AbstractAggregate> {
   }
 
   public static <A extends AbstractAggregate<A>, E> A recreate(A snapshot, List<E> events) {
-    Objects.requireNonNull(snapshot, "snapshot may not be null.");
-    Objects.requireNonNull(events, "events may not be null.");
+    Objects.requireNonNull(snapshot, "snapshot may not be null");
+    Objects.requireNonNull(events, "events may not be null");
     return io.vavr.collection.List.ofAll(events)
                                   .foldLeft(snapshot, AbstractAggregate::apply); // requires configure() execution...
   }

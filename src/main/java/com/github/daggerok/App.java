@@ -69,9 +69,9 @@ abstract class AbstractAggregate<A extends AbstractAggregate> {
     return result;
   }
 
-  public static <A extends AbstractAggregate<A>> A recreate(A snapshot, List<Object> events) {
-    Objects.requireNonNull(snapshot, "snapshot may not be null");
-    Objects.requireNonNull(events, "events may not be null");
+  public static <A extends AbstractAggregate<A>, E> A recreate(A snapshot, List<E> events) {
+    Objects.requireNonNull(snapshot, "snapshot may not be null.");
+    Objects.requireNonNull(events, "events may not be null.");
     return io.vavr.collection.List.ofAll(events)
                                   .foldLeft(snapshot, AbstractAggregate::apply); // requires configure() execution...
   }
@@ -151,7 +151,6 @@ public class App {
                         CounterDecremented.by(1));
     var recreated = snapshot.applyAll(snapshot, events);
     log.info("recreated aggregate: {}", recreated);
-
     log.info("aggregates are same: {}", aggregate.equals(recreated));
 
     var snapshot2 = new CounterAggregate();
@@ -159,5 +158,6 @@ public class App {
 
     var recreated2 = CounterAggregate.recreate(snapshot2, events);
     log.info("recreated 2nd aggregate: {}", recreated2);
+    log.info("aggregates are same: {}", recreated.equals(recreated2));
   }
 }

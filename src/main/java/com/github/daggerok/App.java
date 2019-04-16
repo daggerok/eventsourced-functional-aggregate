@@ -69,7 +69,7 @@ abstract class AbstractAggregate<A extends AbstractAggregate> {
     return result;
   }
 
-  public static <A extends AbstractAggregate<A>> A recreate(A snapshot, List<Object> events) {
+  public static <A extends AbstractAggregate<A>, E> A recreate(A snapshot, List<E> events) {
     Objects.requireNonNull(snapshot, "snapshot may not be null");
     Objects.requireNonNull(events, "events may not be null");
     return io.vavr.collection.List.ofAll(events)

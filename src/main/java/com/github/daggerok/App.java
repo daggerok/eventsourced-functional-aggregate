@@ -69,10 +69,6 @@ abstract class AbstractAggregate<A extends AbstractAggregate> {
     return result;
   }
 
-//  public <E> A apply(E... events) {
-//    return applyAll((A) this, Arrays.stream(events).collect(toList()));
-//  }
-
   public static <A extends AbstractAggregate<A>> A recreate(A snapshot, List<Object> events) {
     Objects.requireNonNull(snapshot, "snapshot may not be null.");
     Objects.requireNonNull(events, "events may not be null.");

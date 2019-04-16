@@ -2,6 +2,7 @@ package com.github.daggerok;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,41 +16,79 @@ import static io.vavr.API.*;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Arrays.asList;
 
-class DoSomethingCommand {}
+@Value(staticConstructor = "of")
+class IncrementCounter {
+  private final Integer amount;
+}
 
-class SomethingIsDoneEvent {}
+@Value(staticConstructor = "of")
+class CounterIncremented {
+  private final Integer amount;
+}
 
-class DoSomethingMoreCommand {}
+@Value(staticConstructor = "of")
+class DecrementCounter {
+  private final Integer amount;
+}
 
-class SomethingMoreAlsoDoneEvent {}
+@Value(staticConstructor = "of")
+class CounterDecremented {
+  private final Integer amount;
+}
 
 @ToString
 @Component
-class MyAggregate {
+class CounterAggregate {
 
   private Long counter = 0L;
 
-  public MyAggregate apply(Object event) {
-    return Match(event).of(
-        Case($(instanceOf(SomethingIsDoneEvent.class)), e -> {
-          counter++;
-          return this;
+  public CounterAggregate handle(Object command) {
+    return Match(command).of(
+        Case($(instanceOf(IncrementCounter.class)), c -> {
+          // validate command
+          Integer amount = c.getAmount();
+          Objects.requireNonNull(amount, "amount shouldn't be null");
+          if (amount < 1) throw new RuntimeException("amount should be positive");
+          // apply event
+          return apply(CounterIncremented.of(amount));
         }),
-        Case($(instanceOf(SomethingMoreAlsoDoneEvent.class)), e -> {
-          counter--;
-          return this;
+        Case($(instanceOf(DecrementCounter.class)), c -> {
+          // validate command
+          Integer amount = c.getAmount();
+          Objects.requireNonNull(amount, "amount shouldn't be null");
+          if (amount < 1) throw new RuntimeException("amount should be positive");
+          // apply event
+          return apply(CounterDecremented.of(amount));
         }),
         Case($(), () -> {
-          throw new RuntimeException("fuck it...");
+          throw new RuntimeException("fuck this command...");
         })
     );
   }
 
-  public static MyAggregate recreate(MyAggregate snapshot, List<Object> events) {
+  public CounterAggregate apply(Object event) {
+    return Match(event).of(
+        Case($(instanceOf(CounterIncremented.class)), e -> {
+          // mutate state
+          counter += e.getAmount();
+          return this;
+        }),
+        Case($(instanceOf(CounterDecremented.class)), e -> {
+          // mutate state
+          counter -= e.getAmount();
+          return this;
+        }),
+        Case($(), () -> {
+          throw new RuntimeException("fuck this event...");
+        })
+    );
+  }
+
+  public static CounterAggregate recreate(CounterAggregate snapshot, List<Object> events) {
     Objects.requireNonNull(snapshot, "snapshot may not be null.");
     Objects.requireNonNull(events, "events may not be null.");
     return io.vavr.collection.List.ofAll(events)
-                                  .foldLeft(snapshot, MyAggregate::apply);
+                                  .foldLeft(snapshot, CounterAggregate::apply);
   }
 }
 
@@ -58,21 +97,22 @@ class MyAggregate {
 @RequiredArgsConstructor
 public class App {
 
-  final MyAggregate aggregate;
+  final CounterAggregate aggregate;
 
   @PostConstruct
   public void init() {
-    log.info("aggregate 0: {}", aggregate);
-    log.info("aggregate 1: {}", aggregate.apply(new SomethingIsDoneEvent()));
-    log.info("aggregate 2: {}", aggregate.apply(new SomethingIsDoneEvent()));
-    log.info("aggregate 3: {}", aggregate.apply(new SomethingMoreAlsoDoneEvent()));
+    log.info("empty aggregate 0: {}", aggregate);
+    log.info("incremented aggregate by 3: {}", aggregate.handle(IncrementCounter.of(3)));
+    log.info("incremented aggregate by 2: {}", aggregate.handle(IncrementCounter.of(2)));
+    log.info("decremented aggregate by 1: {}", aggregate.handle(DecrementCounter.of(1)));
 
-    List<Object> events = asList(new SomethingIsDoneEvent(),
-                                 new SomethingIsDoneEvent(),
-                                 new SomethingMoreAlsoDoneEvent());
-    MyAggregate snapshot = new MyAggregate();
-    MyAggregate recreated = MyAggregate.recreate(snapshot, events);
-    log.info("aggregate 4: {}", recreated);
+    List<Object> events = asList(CounterIncremented.of(3),
+                                 CounterIncremented.of(2),
+                                 CounterDecremented.of(1));
+    CounterAggregate snapshot = new CounterAggregate();
+    CounterAggregate recreated = CounterAggregate.recreate(snapshot, events);
+
+    log.info("recreated aggregate: {}", recreated);
   }
 
   public static void main(String[] args) {

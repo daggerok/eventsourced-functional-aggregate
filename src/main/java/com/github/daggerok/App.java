@@ -87,8 +87,8 @@ class CounterAggregate {
   }
 
   public static CounterAggregate recreate(CounterAggregate snapshot, List<Object> events) {
-    Objects.requireNonNull(snapshot, "snapshot may not be null.");
-    Objects.requireNonNull(events, "events may not be null.");
+    Objects.requireNonNull(snapshot, "snapshot may not be null");
+    Objects.requireNonNull(events, "events may not be null");
     return io.vavr.collection.List.ofAll(events)
                                   .foldLeft(snapshot, CounterAggregate::apply);
   }

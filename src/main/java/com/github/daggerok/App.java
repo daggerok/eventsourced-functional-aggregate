@@ -17,22 +17,22 @@ import static io.vavr.API.*;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Arrays.asList;
 
-@Value(staticConstructor = "of")
+@Value(staticConstructor = "by")
 class IncrementCounter {
   private final Integer amount;
 }
 
-@Value(staticConstructor = "of")
+@Value(staticConstructor = "by")
 class CounterIncremented {
   private final Integer amount;
 }
 
-@Value(staticConstructor = "of")
+@Value(staticConstructor = "by")
 class DecrementCounter {
   private final Integer amount;
 }
 
-@Value(staticConstructor = "of")
+@Value(staticConstructor = "by")
 class CounterDecremented {
   private final Integer amount;
 }
@@ -52,7 +52,7 @@ class CounterAggregate {
           Objects.requireNonNull(amount, "amount shouldn't be null");
           if (amount < 1) throw new RuntimeException("amount should be positive");
           // apply event
-          return apply(CounterIncremented.of(amount));
+          return apply(CounterIncremented.by(amount));
         }),
         Case($(instanceOf(DecrementCounter.class)), c -> {
           // validate command
@@ -60,7 +60,7 @@ class CounterAggregate {
           Objects.requireNonNull(amount, "amount shouldn't be null");
           if (amount < 1) throw new RuntimeException("amount should be positive");
           // apply event
-          return apply(CounterDecremented.of(amount));
+          return apply(CounterDecremented.by(amount));
         }),
         Case($(), () -> {
           throw new RuntimeException("fuck this command...");
@@ -104,13 +104,13 @@ public class App {
   @PostConstruct
   public void init() {
     log.info("empty aggregate 0: {}", aggregate);
-    log.info("incremented aggregate by 3: {}", aggregate.handle(IncrementCounter.of(3)));
-    log.info("incremented aggregate by 2: {}", aggregate.handle(IncrementCounter.of(2)));
-    log.info("decremented aggregate by 1: {}", aggregate.handle(DecrementCounter.of(1)));
+    log.info("incremented aggregate by 3: {}", aggregate.handle(IncrementCounter.by(3)));
+    log.info("incremented aggregate by 2: {}", aggregate.handle(IncrementCounter.by(2)));
+    log.info("decremented aggregate by 1: {}", aggregate.handle(DecrementCounter.by(1)));
 
-    var events = asList(CounterIncremented.of(3),
-                        CounterIncremented.of(2),
-                        CounterDecremented.of(1));
+    var events = asList(CounterIncremented.by(3),
+                        CounterIncremented.by(2),
+                        CounterDecremented.by(1));
     var snapshot = new CounterAggregate();
     var recreated = CounterAggregate.recreate(snapshot, events);
     log.info("recreated aggregate: {}", recreated);

@@ -29,6 +29,17 @@ class AppTest {
   }
 
   @Test
+  void test_increment_by_2_command() {
+    log.info("test increment command...");
+    var ctx = new AnnotationConfigApplicationContext(App.class);
+    var aggregate = ctx.getBean(CounterAggregate.class);
+    var counter = aggregate.getCounter();
+    var incremented = aggregate.handle(IncrementCounter.by(2));
+    assertThat(incremented.getCounter()).isEqualTo(counter + 2);
+    log.info("incremented: {}", incremented);
+  }
+
+  @Test
   void test_CounterAggregate_recreate() {
     log.info("test CounterAggregate.recreate functionality...");
     var ctx = new AnnotationConfigApplicationContext(App.class);
@@ -36,9 +47,9 @@ class AppTest {
     log.info("snapshot aggregate: {}", snapshot);
     assertThat(snapshot.getCounter()).isEqualTo(4);
 
-    var events = asList(CounterIncremented.of(3), // 7 = 4 + 3
-                        CounterIncremented.of(2), // 9 = 7 + 2
-                        CounterDecremented.of(1));// 8 = 9 - 1
+    var events = asList(CounterIncremented.by(3), // 7 = 4 + 3
+                        CounterIncremented.by(2), // 9 = 7 + 2
+                        CounterDecremented.by(1));// 8 = 9 - 1
     var base = snapshot.getCounter();
     var recreated = CounterAggregate.recreate(snapshot, events);
     log.info("recreated aggregate: {}", recreated);

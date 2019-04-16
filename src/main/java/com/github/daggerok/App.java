@@ -16,7 +16,6 @@ import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("unchecked")
 abstract class AbstractAggregate<A extends AbstractAggregate> {
@@ -151,7 +150,6 @@ public class App {
                         CounterDecremented.by(1));
     var recreated = snapshot.applyAll(snapshot, events);
     log.info("recreated aggregate: {}", recreated);
-
     log.info("aggregates are same: {}", aggregate.equals(recreated));
 
     var snapshot2 = new CounterAggregate();
@@ -159,5 +157,6 @@ public class App {
 
     var recreated2 = CounterAggregate.recreate(snapshot2, events);
     log.info("recreated 2nd aggregate: {}", recreated2);
+    log.info("aggregates are same: {}", recreated.equals(recreated2));
   }
 }

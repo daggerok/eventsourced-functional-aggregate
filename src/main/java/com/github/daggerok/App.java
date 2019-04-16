@@ -1,5 +1,6 @@
 package com.github.daggerok;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.Value;
@@ -40,13 +41,14 @@ class CounterDecremented {
 @Component
 class CounterAggregate {
 
+  @Getter
   private Long counter = 0L;
 
   public CounterAggregate handle(Object command) {
     return Match(command).of(
         Case($(instanceOf(IncrementCounter.class)), c -> {
           // validate command
-          Integer amount = c.getAmount();
+          var amount = c.getAmount();
           Objects.requireNonNull(amount, "amount shouldn't be null");
           if (amount < 1) throw new RuntimeException("amount should be positive");
           // apply event
@@ -54,7 +56,7 @@ class CounterAggregate {
         }),
         Case($(instanceOf(DecrementCounter.class)), c -> {
           // validate command
-          Integer amount = c.getAmount();
+          var amount = c.getAmount();
           Objects.requireNonNull(amount, "amount shouldn't be null");
           if (amount < 1) throw new RuntimeException("amount should be positive");
           // apply event
@@ -106,12 +108,11 @@ public class App {
     log.info("incremented aggregate by 2: {}", aggregate.handle(IncrementCounter.of(2)));
     log.info("decremented aggregate by 1: {}", aggregate.handle(DecrementCounter.of(1)));
 
-    List<Object> events = asList(CounterIncremented.of(3),
-                                 CounterIncremented.of(2),
-                                 CounterDecremented.of(1));
-    CounterAggregate snapshot = new CounterAggregate();
-    CounterAggregate recreated = CounterAggregate.recreate(snapshot, events);
-
+    var events = asList(CounterIncremented.of(3),
+                        CounterIncremented.of(2),
+                        CounterDecremented.of(1));
+    var snapshot = new CounterAggregate();
+    var recreated = CounterAggregate.recreate(snapshot, events);
     log.info("recreated aggregate: {}", recreated);
   }
 

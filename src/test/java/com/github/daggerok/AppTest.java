@@ -1,7 +1,6 @@
 package com.github.daggerok;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -45,13 +44,12 @@ class AppTest {
     var ctx = new AnnotationConfigApplicationContext(App.class);
     var snapshot = ctx.getBean(CounterAggregate.class);// 4
     log.info("snapshot aggregate: {}", snapshot);
-    assertThat(snapshot.getCounter()).isEqualTo(4);
 
     var events = asList(CounterIncremented.by(3), // 7 = 4 + 3
                         CounterIncremented.by(2), // 9 = 7 + 2
                         CounterDecremented.by(1));// 8 = 9 - 1
     var base = snapshot.getCounter();
-    var recreated = CounterAggregate.recreate(snapshot, events);
+    var recreated = snapshot.applyAll(snapshot, events);
     log.info("recreated aggregate: {}", recreated);
     assertThat(recreated.getCounter()).isEqualTo(base + 4);
   }

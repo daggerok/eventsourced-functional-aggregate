@@ -60,8 +60,8 @@ abstract class AbstractAggregate<A extends AbstractAggregate> {
   }
 
   public <E> A applyAll(A snapshot, List<E> events) {
-    Objects.requireNonNull(snapshot, "snapshot may not be null.");
-    Objects.requireNonNull(events, "events may not be null.");
+    Objects.requireNonNull(snapshot, "snapshot may not be null");
+    Objects.requireNonNull(events, "events may not be null");
     var result = snapshot;
     for (Object event : events) {
       result = (A) result.apply(event);
@@ -70,8 +70,8 @@ abstract class AbstractAggregate<A extends AbstractAggregate> {
   }
 
   public static <A extends AbstractAggregate<A>> A recreate(A snapshot, List<Object> events) {
-    Objects.requireNonNull(snapshot, "snapshot may not be null.");
-    Objects.requireNonNull(events, "events may not be null.");
+    Objects.requireNonNull(snapshot, "snapshot may not be null");
+    Objects.requireNonNull(events, "events may not be null");
     return io.vavr.collection.List.ofAll(events)
                                   .foldLeft(snapshot, AbstractAggregate::apply); // requires configure() execution...
   }
